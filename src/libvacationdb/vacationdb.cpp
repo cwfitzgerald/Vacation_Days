@@ -1,6 +1,6 @@
 #include "../vacationdb.hpp"
-#include "vacationdb_impl.hpp"
+#include "database_impl.hpp"
 
-void vacationdb::_detail::db_impl_deleter::operator()(db_impl* value) {
+void Vacationdb::_detail::db_impl_deleter::operator()(db_impl* value) {
 	delete value;
 }

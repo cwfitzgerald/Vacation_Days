@@ -69,7 +69,6 @@ multilib: 32bit 64bit
 dllcopy: 
 	@echo Copying $(DLLS)
 	@cp -f $(addprefix $(DLLDIR), $(DLLS)) bin
-	@strip bin/*.dll
 
 
 vpath %.cpp $(SRC_DIR)
@@ -91,6 +90,7 @@ bin/$(LIB_NAME).dll: DEFINES  = -DVACATIONDB_EXPORT
 bin/$(LIB_NAME).dll: $(LIB_OBJ64)
 	@echo Creating shared object $@
 	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) -shared $^ -o $@ $(LINK)
+	
 
 bin/$(PROJECT_NAME)_x86.exe: $(OBJ32) bin/$(LIB_NAME).dll
 	@echo Linking $@
