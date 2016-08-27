@@ -86,7 +86,7 @@ endef
 
 
 bin/$(LIB_NAME).dll: CXXFLAGS = -fPIC -s
-bin/$(LIB_NAME).dll: INCLUDES = -Iinclude/$(LIB_NAME)
+bin/$(LIB_NAME).dll: INCLUDES = -Iinclude/$(LIB_NAME) -Irapidjson/include
 bin/$(LIB_NAME).dll: DEFINES  = -DVACATIONDB_EXPORT	
 bin/$(LIB_NAME).dll: $(LIB_OBJ64)
 	@echo Creating shared object $@
