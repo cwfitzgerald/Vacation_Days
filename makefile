@@ -12,10 +12,10 @@ OUTPUT_FOLDER := bin/
 
 EXTANT     = _x64.exe
 
-CXXFLAGS  :=
+CXXFLAGS  := -fopenmp
 WARNINGS  := -Wall -Wextra
 FULLWARN  := -Wall -Wextra -Wpedantic
-STD       := -std=c++14 
+STD       := -std=c++1z 
 OPTIMIZE  := -O3
 ARCH      := 
 DEBUG     := 
@@ -35,7 +35,7 @@ OBJ32     := $(patsubst %.o,%_x86.o, $(OBJN))
 OBJ64     := $(patsubst %.o,%_x64.o, $(OBJN))
 
 DLLDIR    := /mingw64/bin/
-DLLS      := libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll
+DLLS      := libstdc++-6.dll libgcc_s_seh-1.dll libwinpthread-1.dll libgmp-10.dll
 
 LIB_MODULES   := 
 LIB_SRC_DIR   := src/$(LIB_NAME) $(addprefix src/$(LIB_NAME)/,$(LIB_MODULES))
@@ -60,11 +60,18 @@ multilib: 32bit 64bit
 32bit: checkdirs bin/$(PROJECT_NAME)_x86.exe
 
 64bit: CC = $(CC_64)
-64bit: CC = $(CXX_64)
+64bit: CXX = $(CXX_64)
 64bit: MODE = 
 64bit: EXTANT = _x64.exe
 64bit: INCLUDES := $(INCLUDE64)
 64bit: checkdirs bin/$(PROJECT_NAME)_x64.exe
+
+warning: WARNINGS = $(FULLWARN)
+warning: 64bit
+
+debug: DEBUG    = -g
+debug: OPTIMIZE = -O0
+debug: 64bit
 
 dllcopy: 
 	@echo Copying $(DLLS)
@@ -84,9 +91,10 @@ $1/%_x64.o: %.cpp
 endef
 
 
-bin/$(LIB_NAME).dll: CXXFLAGS = -fPIC -s
-bin/$(LIB_NAME).dll: INCLUDES = -Iinclude/$(LIB_NAME) -Irapidjson/include
-bin/$(LIB_NAME).dll: DEFINES  = -DVACATIONDB_EXPORT	
+bin/$(LIB_NAME).dll: CXXFLAGS += -fPIC
+bin/$(LIB_NAME).dll: INCLUDES  = -Iinclude/$(LIB_NAME) -Irapidjson/include
+bin/$(LIB_NAME).dll: DEFINES   = -DVACATIONDB_EXPORT	
+bin/$(LIB_NAME).dll: LINK      = -lpthread -lgmp 
 bin/$(LIB_NAME).dll: $(LIB_OBJ64)
 	@echo Creating shared object $@
 	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) -shared $^ -o $@ $(LINK)

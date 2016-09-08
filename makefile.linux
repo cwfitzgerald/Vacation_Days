@@ -1,0 +1,92 @@
+CC_64     := gcc
+CXX_64    := g++
+CC        := $(CC_64)
+CXX       := $(CXX_64)
+
+PROJECT_NAME := Vacation_Time
+LIB_NAME     := libvacationdb
+
+OUTPUT_FOLDER := bin/
+
+EXTANT     = 
+
+CXXFLAGS  := -fopenmp
+WARNINGS  := -Wall -Wextra
+FULLWARN  := -Wall -Wextra -Wpedantic
+STD       := -std=c++1z 
+OPTIMIZE  := -O3
+ARCH      := 
+DEBUG     := 
+DEFINES   := 
+INCLUDE32 := 
+INCLUDE64 := -Iinclude
+LINK      := -Lbin
+MODE       = 
+
+MODULES   := 
+SRC_DIR   := src $(addprefix src/,$(MODULES))
+BUILD_DIR := obj $(addprefix obj/,$(MODULES))
+
+SRC       := $(foreach sdir,$(SRC_DIR),$(wildcard $(sdir)/*.cpp))
+OBJN      := $(patsubst src/%.cpp,obj/%.o,$(SRC))
+OBJ64     := $(patsubst %.o,%.o, $(OBJN))
+
+LIB_MODULES   := 
+LIB_SRC_DIR   := src/$(LIB_NAME) $(addprefix src/$(LIB_NAME)/,$(LIB_MODULES))
+LIB_BUILD_DIR := obj/$(LIB_NAME) $(addprefix obj/$(LIB_NAME)/,$(LIB_MODULES))
+
+LIB_SRC       := $(foreach sdir,$(LIB_SRC_DIR),$(wildcard $(sdir)/*.cpp))
+LIB_OBJN      := $(patsubst src/%.cpp,obj/%.o,$(LIB_SRC))
+LIB_OBJ64     := $(patsubst %.o,%.o, $(LIB_OBJN))
+
+.PHONY: all checkdirs clean
+
+all: checkdirs 64bit
+
+64bit: CC = $(CC_64)
+64bit: CXX = $(CXX_64)
+64bit: MODE = 
+64bit: EXTANT = 
+64bit: INCLUDES := $(INCLUDE64)
+64bit: checkdirs bin/$(PROJECT_NAME)
+
+
+vpath %.cpp $(SRC_DIR)
+
+define make-goal
+$1/%.o: %.cpp
+	@echo $$(CXX) $$<
+	@$$(CXX) $$(WARNINGS) $$(STD) $$(OPTIMIZE) $$(MODE) $$(ARCH) $$(DEBUG) $$(DEFINES) $$(INCLUDES) $$(CXXFLAGS) -c $$< -o $$@
+endef
+
+
+bin/$(LIB_NAME).so: CXXFLAGS += -fPIC -fvisibility=hidden
+bin/$(LIB_NAME).so: INCLUDES  = -Iinclude/$(LIB_NAME) -Irapidjson/include
+bin/$(LIB_NAME).so: DEFINES   = -DVACATIONDB_EXPORT	
+bin/$(LIB_NAME).so: LINK      = -lpthread -lgmp
+bin/$(LIB_NAME).so: $(LIB_OBJ64)
+	@echo Creating shared object $@
+	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) -shared $^ -o $@ $(LINK)
+	
+bin/$(PROJECT_NAME): $(OBJ64) bin/$(LIB_NAME).so
+	@echo Linking $@
+	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $(OBJ64) -o $@ $(LINK) -l$(patsubst lib%,%,$(LIB_NAME))
+
+
+checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) bin
+	
+
+bin:
+	@mkdir -p bin
+
+$(BUILD_DIR):
+	@mkdir -p $@
+
+$(LIB_BUILD_DIR):
+	@mkdir -p $@
+
+clean:
+	@rm -f bin/$(PROJECT_NAME) bin/$(LIB_NAME)*.so
+	@find obj/ | awk "/\.o/" | xargs rm -f 
+
+$(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))
