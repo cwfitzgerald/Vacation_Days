@@ -35,7 +35,7 @@ namespace Vacationdb {
 		struct VACATIONDB_SHARED db_impl_deleter {
 			void  operator()(db_impl* value);
 		};
-	};
+	}
 
 	class Invalid_Date {
 		virtual const char * what () const noexcept {
@@ -87,7 +87,7 @@ namespace Vacationdb {
 			uint16_t end_day;
 			std::string time;
 		};
-		std::vector<Extra_Work_Time_Info_t> extra_work_time;
+		const std::vector<Extra_Work_Time_Info_t> extra_work_time;
 	};
 
 	// Types to represent types of vacation days and
@@ -136,7 +136,7 @@ namespace Vacationdb {
 
 		PersonID_t     add_employee                        (const char * name, uint16_t start_year, uint16_t start_month, uint16_t start_day, const char * work_time);
 		void           edit_employee_name                  (const PersonID_t employee, const char * name);
-		void           edit_employee_start                 (const PersonID_t employee, uint16_t start_year, uint16_t start_month, uint16_t start_day);
+		void           edit_employee_start_date            (const PersonID_t employee, uint16_t start_year, uint16_t start_month, uint16_t start_day);
 		void           edit_employee_work_time             (const PersonID_t employee, const char * work_time);
 		Extra_TimeID_t edit_employee_add_extra_work_time   (const PersonID_t employee, uint16_t start_year, uint16_t start_month, uint16_t start_day, 
 		                                                    uint16_t end_year, uint16_t end_month, uint16_t end_day, const char * time);
@@ -146,6 +146,7 @@ namespace Vacationdb {
 
 		std::string    get_employee_name(const PersonID_t employee);
 		Person_Info_t  get_employee_info(const PersonID_t employee);
+		size_t         get_employee_count();
 
 		std::vector<std::string>   list_employee_names();
 		std::vector<Person_Info_t> list_employee_info();
@@ -164,6 +165,7 @@ namespace Vacationdb {
 
 		std::string get_day_name(const DayID_t);
 		Day_Info_t  get_day_info(const DayID_t);
+		size_t      get_day_count();
 
 		std::vector<std::string>   list_day_names();
 		std::vector<Day_Info_t>    list_day_info();
@@ -172,11 +174,11 @@ namespace Vacationdb {
 		// Querying the amounts of days that employees have //
 		//////////////////////////////////////////////////////
 
-		void add_person_day   (const PersonID_t, const DayID_t, uint16_t year, uint16_t month, uint16_t day);
+		void add_person_day   (const PersonID_t, const DayID_t, uint16_t year, uint16_t month, uint16_t day, const char * value);
 		void remove_person_day(const PersonID_t, const DayID_t, uint16_t year, uint16_t month, uint16_t day);
 
-		std::string                query_person_days(const PersonID_t, const DayID_t);
-		std::vector<Person_Days_t> query_person_days(const PersonID_t); 
+		std::string                query_person_days(const PersonID_t p, const DayID_t d, uint16_t year, uint16_t month, uint16_t day);
+		std::vector<Person_Days_t> query_person_days(const PersonID_t p, uint16_t year, uint16_t month, uint16_t day); 
 
 		/////////////////////////////////
 		// Loading/Saving the Database //

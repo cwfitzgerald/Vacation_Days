@@ -26,7 +26,11 @@ namespace Vacationdb::_detail {
 			bool valid = true;
 		};
 		std::vector<Extra_Time_t> extra_time;
-		std::vector<std::vector<Date>> days_taken;
+		struct Day_Taken_t {
+			Date day;
+			Number value;
+		};
+		std::vector<std::vector<Day_Taken_t>> days_taken;
 		bool valid = true;
 	};
 
@@ -60,7 +64,7 @@ namespace Vacationdb::_detail {
 		void remove_day_from_people(size_t index);
 
 		// File loading
-		std::string current_file_name;
+		std::string current_file_name = "vdb.json";
 		std::atomic<bool> io_lock;
 		std::atomic<float> io_percentage;
 		std::future<void> io_future;

@@ -46,6 +46,9 @@ LIB_OBJN      := $(patsubst src/%.cpp,obj/%.o,$(LIB_SRC))
 LIB_OBJ32     := $(patsubst %.o,%_x86.o, $(LIB_OBJN))
 LIB_OBJ64     := $(patsubst %.o,%_x64.o, $(LIB_OBJN))
 
+TESTL_SRC  := $(wildcard src/$(LIB_NAME)/tests/*.cpp)
+TESTL_OBJN := $(patsubst src/%.cpp,obj/%_x64.o,$(TESTL_SRC))
+
 .PHONY: all checkdirs clean
 
 all: checkdirs 64bit
@@ -72,6 +75,11 @@ warning: 64bit
 debug: DEBUG    = -g
 debug: OPTIMIZE = -O0
 debug: 64bit
+ 
+test: INCLUDES += -Iinclude/$(LIB_NAME) -Igtest/googletest/include
+test: LINK += gtest/googletest/make/gtest_main.a -Lbin/ -lvacationdb
+test: CXXFLAGS := 
+test: checkdirs bin/$(LIB_NAME)_test.exe 	
 
 dllcopy: 
 	@echo Copying $(DLLS)
@@ -108,8 +116,11 @@ bin/$(PROJECT_NAME)_x64.exe: $(OBJ64) bin/$(LIB_NAME).dll
 	@echo Linking $@
 	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK)
 
+bin/$(LIB_NAME)_test.exe: $(TESTL_OBJN) bin/$(LIB_NAME).dll
+	@echo Linking $@ 
+	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK)
 
-checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) bin
+checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) $(TESTL_BUILD_DIR) bin
 	
 
 bin:
@@ -121,8 +132,11 @@ $(BUILD_DIR):
 $(LIB_BUILD_DIR):
 	@mkdir -p $@
 
+$(TESTL_BUILD_DIR):
+	@mkdir -p $@
+
 clean:
-	@rm -f bin/$(PROJECT_NAME)*.exe bin/$(LIB_NAME)*.dll
+	@rm -f bin/$(PROJECT_NAME)*.exe bin/$(LIB_NAME)*.dll bin/$(LIB_NAME)_test*.exe
 	@find obj/ | awk "/\.o/" | xargs rm -f 
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))

@@ -1,8 +1,7 @@
 #include "database_impl.hpp"
 
 namespace Vacationdb::_detail {
-	boost::gregorian::date create_date_safe(uint16_t start_year, uint16_t start_month,
-	                                        uint16_t start_day) {
+	boost::gregorian::date create_date_safe(uint16_t start_year, uint16_t start_month, uint16_t start_day) {
 		boost::gregorian::date ret;
 		try {
 			ret = boost::gregorian::date{start_year, start_month, start_day};
@@ -19,8 +18,8 @@ namespace Vacationdb::_detail {
 		try {
 			ret = boost::multiprecision::mpq_rational{value};
 		}
-		catch (boost::exception_detail::clone_impl<
-		       boost::exception_detail::error_info_injector<std::runtime_error>>& exep) {
+		catch (boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::runtime_error>>&
+		           exep) {
 			throw Vacationdb::Invalid_Number();
 		}
 		return ret;
@@ -95,5 +94,22 @@ namespace Vacationdb::_detail {
 		for (auto& p : people) {
 			p.days_taken[index].erase(p.days_taken[index].begin(), p.days_taken[index].end());
 		}
+	}
+
+	void db_impl::load_file() {}
+
+	void db_impl::save_file() {}
+
+	// Clear all data
+	void db_impl::clear() {
+		people.clear();
+		people.shrink_to_fit();
+		day_types.clear();
+		day_types.shrink_to_fit();
+		current_file_name = "vdb.json";
+		io_lock.store(false);
+		io_percentage.store(0);
+		io_future = decltype(io_future)();
+		io_curop  = IO_Status_t::NOOP;
 	}
 }
