@@ -1,13 +1,42 @@
 #pragma once
 
-#include <boost/serialization/strong_typedef.hpp>
 #include <cinttypes>
 #include <memory>
-#include <stdexcept>
 #include <string>
+#include <utility>
 #include <vector>
 
 // clang-format off
+
+#define VACATIONDB_strong_typedef(T, Name)     \
+	class Name {                               \
+	  private:                                 \
+		T t;                                   \
+                                               \
+	  public:                                  \
+		Name() : t(){};                        \
+		Name(const Name& n) : t(n.t){};        \
+		Name(Name&& n) : t(std::move(n.t)){};  \
+                                               \
+		explicit Name(const T& i) : t(i){};    \
+		explicit Name(T&& i) : t(i){};         \
+                                               \
+		Name& operator=(const Name& n) {       \
+			t = n.t;                           \
+			return *this;                      \
+		};                                     \
+		Name& operator=(Name&& n) {            \
+			t = std::move(n.t);                \
+			return *this;                      \
+		};                                     \
+                                               \
+		operator const T&() const {            \
+			return t;                          \
+		};                                     \
+		operator T&() {                        \
+			return t;                          \
+		};                                     \
+	};
 
 #if defined(_WIN32) || defined(_CYGWIN)
 	#ifdef VACATIONDB_EXPORT
@@ -37,46 +66,46 @@ namespace Vacationdb {
 		};
 	}
 
-	class Invalid_Date {
+	struct Invalid_Date {
 		virtual const char * what () const noexcept {
 			return "The date supplied was invalid";
 		}
 	};
 
-	class Invalid_Number {
+	struct Invalid_Number {
 		virtual const char * what () const noexcept {
 			return "The number supplied was invalid";
 		}
 	};
 
-	class Invalid_Index {
+	struct Invalid_Index {
 		virtual const char * what () const noexcept {
 			return "The index supplied was invalid";
 		}
 	};
 
-	class Employee_Not_Found {
+	struct Employee_Not_Found {
 		virtual const char * what () const noexcept {
-			return "The employee you asked for was not found";
+			return "The employee asked for was not found";
 		}
 	};
 
-	class Day_Not_Found {
+	struct Day_Not_Found {
 		virtual const char * what () const noexcept {
-			return "The vacation day type you asked for was not found";
+			return "The vacation day type asked for was not found";
 		}
 	};
 
 	// Types to represent an employee
-	BOOST_STRONG_TYPEDEF(size_t, PersonID_t);
-	BOOST_STRONG_TYPEDEF(size_t, Extra_TimeID_t);
+	VACATIONDB_strong_typedef(size_t, PersonID_t);
+	VACATIONDB_strong_typedef(size_t, Extra_TimeID_t);
 	struct Person_Info_t {
-		const PersonID_t id;
-		const std::string name;
-		const uint16_t start_year;
-		const uint16_t start_month;
-		const uint16_t start_day;
-		const std::string work_time;
+		PersonID_t id;
+		std::string name;
+		uint16_t start_year;
+		uint16_t start_month;
+		uint16_t start_day;
+		std::string work_time;
 		struct Extra_Work_Time_Info_t {
 			Extra_TimeID_t id;
 			uint16_t start_year;
@@ -87,32 +116,32 @@ namespace Vacationdb {
 			uint16_t end_day;
 			std::string time;
 		};
-		const std::vector<Extra_Work_Time_Info_t> extra_work_time;
+		std::vector<Extra_Work_Time_Info_t> extra_work_time;
 	};
 
 	// Types to represent types of vacation days and
 	// their respective rules.
-	BOOST_STRONG_TYPEDEF(size_t, DayID_t);
-	BOOST_STRONG_TYPEDEF(size_t, RuleID_t);
+	VACATIONDB_strong_typedef(size_t, DayID_t);
+	VACATIONDB_strong_typedef(size_t, RuleID_t);
 
 	struct Day_Info_t {
-		const DayID_t id;
-		const std::string name;
-		const std::string rollover;
-		const std::string yearly_bonus;
+		DayID_t id;
+		std::string name;
+		std::string rollover;
+		std::string yearly_bonus;
 		struct Day_Rule_t {
-			const RuleID_t id;
+			RuleID_t id;
 			uint32_t month_start;
 			std::string days_per_year;
 		};
-		const std::vector<Day_Rule_t> rules;
+		std::vector<Day_Rule_t> rules;
 	};
 
 	// A type to pass the total amount of vacation days
 	// of a particular type a person has
 	struct Person_Days_t {
-		const std::string day_name;
-		const std::string days;
+		std::string day_name;
+		std::string days;
 	};
 
 	// A type to pass the current status of loading/saving
@@ -128,6 +157,10 @@ namespace Vacationdb {
 	class VACATIONDB_SHARED Database {
 	  public:
 		Database();
+		Database(const Database&) = delete;
+		Database(Database&&) = default;
+		Database& operator=(const Database&) = delete;
+		Database& operator=(Database&&) = default;
 		~Database() = default;
 
 		////////////////////////////////////////
@@ -155,13 +188,14 @@ namespace Vacationdb {
 		// Operations on day types //
 		/////////////////////////////
 
-		DayID_t  add_day(const char * name, const char * rollover, const char * yearly_bonus);
+		DayID_t  add_day               (const char * name, const char * rollover, const char * yearly_bonus);
+		void     edit_day_name         (const DayID_t, const char * name);
 		void     edit_day_rollover     (const DayID_t, const char * rollover);
 		void     edit_day_yearly_bonus (const DayID_t, const char * yearly_bonus);
 		RuleID_t edit_day_add_rule     (const DayID_t, uint32_t month_start, const char * days_per_year);
 		void     edit_day_remove_rule  (const DayID_t, const RuleID_t);
 		DayID_t  find_day              (const char * name);
-		void     delete_day       (const DayID_t);
+		void     delete_day            (const DayID_t);
 
 		std::string get_day_name(const DayID_t);
 		Day_Info_t  get_day_info(const DayID_t);

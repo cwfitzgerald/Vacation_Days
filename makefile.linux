@@ -10,11 +10,11 @@ OUTPUT_FOLDER := bin/
 
 EXTANT     = 
 
-CXXFLAGS  := -fopenmp 
+CXXFLAGS  := 
 WARNINGS  := -Wall -Wextra
 FULLWARN  := -Wall -Wextra -Wpedantic
 STD       := -std=c++1z 
-OPTIMIZE  := -O3
+OPTIMIZE  := -g
 ARCH      := 
 DEBUG     := 
 DEFINES   := 
@@ -39,7 +39,10 @@ LIB_SRC       := $(foreach sdir,$(LIB_SRC_DIR),$(wildcard $(sdir)/*.cpp))
 LIB_OBJN      := $(patsubst src/%.cpp,obj/%.o,$(LIB_SRC))
 LIB_OBJ64     := $(patsubst %.o,%.o, $(LIB_OBJN))
 
-.PHONY: all checkdirs clean
+TESTL_SRC  := $(wildcard src/$(LIB_NAME)/tests/*.cpp)
+TESTL_OBJN := $(patsubst src/%.cpp,obj/%.o,$(TESTL_SRC))
+
+.PHONY: all checkdirs clean 64bit release
 
 all: checkdirs 64bit
 
@@ -50,6 +53,13 @@ all: checkdirs 64bit
 64bit: INCLUDES := $(INCLUDE64)
 64bit: checkdirs bin/$(PROJECT_NAME)
 
+release: OPTIMIZE = -O3
+release: checkdirs 64bit
+
+test: INCLUDES += -Iinclude/$(LIB_NAME) -Igtest/googletest/include
+test: LINK += gtest/googletest/make/gtest_main.a -Lbin/ -lvacationdb -lpthread
+test: CXXFLAGS := 
+test: checkdirs bin/$(LIB_NAME)_test
 
 vpath %.cpp $(SRC_DIR)
 
@@ -72,6 +82,9 @@ bin/$(PROJECT_NAME): $(OBJ64) bin/$(LIB_NAME).so
 	@echo Linking $@
 	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $(OBJ64) -o $@ $(LINK) -l$(patsubst lib%,%,$(LIB_NAME))
 
+bin/$(LIB_NAME)_test: $(TESTL_OBJN) bin/$(LIB_NAME).so
+	@echo Linking $@ 
+	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK)
 
 checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) bin
 	
@@ -87,6 +100,6 @@ $(LIB_BUILD_DIR):
 
 clean:
 	@rm -f bin/$(PROJECT_NAME) bin/$(LIB_NAME)*.so
-	@find obj/ | awk "/\.o/" | xargs rm -f 
+	@rm -f `find obj/ | awk "/\.o/"`
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))

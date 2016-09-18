@@ -221,6 +221,13 @@ namespace Vacationdb {
 		return DayID_t{impl->day_types.size() - 1};
 	}
 
+	void Database::edit_day_name(const DayID_t d, const char* name) {
+		impl->block_if_locked();
+		impl->validate(d);
+
+		impl->day_types[d].name = name;
+	}
+
 	void Database::edit_day_rollover(const DayID_t d, const char* rollover) {
 		impl->block_if_locked();
 		impl->validate(d);
@@ -236,7 +243,7 @@ namespace Vacationdb {
 
 		auto yearly_bonus_number = _detail::create_number_safe(yearly_bonus);
 
-		impl->day_types[d].rollover = std::move(yearly_bonus_number);
+		impl->day_types[d].yearly_bonus = std::move(yearly_bonus_number);
 	}
 
 	RuleID_t Database::edit_day_add_rule(DayID_t day, uint32_t month_start,
@@ -308,11 +315,13 @@ namespace Vacationdb {
 
 		size_t i = 0;
 		for (auto&& rule : internal.rules) {
-			uint32_t mb = rule.month_begin;
-			std::ostringstream dpy;
-			dpy << rule.days_per_year;
+			if (rule.valid) {
+				uint32_t mb = rule.month_begin;
+				std::ostringstream dpy;
+				dpy << rule.days_per_year;
 
-			r.push_back(Day_Info_t::Day_Rule_t{RuleID_t{i++}, mb, dpy.str()});
+				r.push_back(Day_Info_t::Day_Rule_t{RuleID_t{i++}, mb, dpy.str()});
+			}
 		}
 
 		Day_Info_t ret{d, internal.name, ro.str(), yb.str(), std::move(r)};

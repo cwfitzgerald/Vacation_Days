@@ -137,6 +137,6 @@ $(TESTL_BUILD_DIR):
 
 clean:
 	@rm -f bin/$(PROJECT_NAME)*.exe bin/$(LIB_NAME)*.dll bin/$(LIB_NAME)_test*.exe
-	@find obj/ | awk "/\.o/" | xargs rm -f 
+	@rm -f `find obj/ | awk "/\.o/"`
 
 $(foreach bdir,$(BUILD_DIR),$(eval $(call make-goal,$(bdir))))

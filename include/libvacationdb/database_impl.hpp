@@ -7,6 +7,7 @@
 #include <cinttypes>
 #include <future>
 #include <string>
+#include <type_traits>
 #include <vector>
 
 #include "../vacationdb.hpp"
@@ -34,6 +35,9 @@ namespace Vacationdb::_detail {
 		bool valid = true;
 	};
 
+	static_assert(std::is_move_constructible<Person>::value, "Person must be move constructible");
+	static_assert(std::is_move_assignable<Person>::value, "Person must be move assignable");
+
 	struct Day {
 		std::string name;
 		Number rollover;
@@ -46,6 +50,9 @@ namespace Vacationdb::_detail {
 		std::vector<Day_Rules_Data> rules;
 		bool valid = true;
 	};
+
+	static_assert(std::is_move_constructible<Day>::value, "Value must be move constructible");
+	static_assert(std::is_move_assignable<Day>::value, "Value must be move assignable");
 
 	Date create_date_safe(uint16_t start_year, uint16_t start_month, uint16_t start_day);
 	Number create_number_safe(const char* value);
