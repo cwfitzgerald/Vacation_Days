@@ -1,0 +1,3 @@
+- Throw error if adding a duplicate
+- Support for case insensitivity in searches
+- 

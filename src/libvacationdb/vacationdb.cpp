@@ -359,8 +359,9 @@ namespace Vacationdb {
 		size_t i = 0;
 		for (auto&& dt : impl->day_types) {
 			if (dt.valid) {
-				ret.push_back(this->get_day_info(DayID_t{i++}));
+				ret.push_back(this->get_day_info(DayID_t{i}));
 			}
+			i++;
 		}
 
 		return ret;

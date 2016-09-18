@@ -73,7 +73,7 @@ TEST(DB_EMPLOYEE_CATALOG, EditAddRemoveExtraWorkTime) {
 	ASSERT_EQ(info.extra_work_time.size(), size_t{0});
 }
 
-TEST(DB_EMPLOYEE_CATALOG, EditAddExtraWorkTime) {
+TEST(DB_EMPLOYEE_CATALOG, EditAddExtraWorkTimeAccuracy) {
 	Vacationdb::Database db;
 
 	auto e = db.add_employee("", 1400, 1, 1, "1");
@@ -118,17 +118,16 @@ TEST(DB_EMPLOYEE_CATALOG, FindMultiName) {
 TEST(DB_EMPLOYEE_CATALOG, FindMultiNamewithDelete) {
 	Vacationdb::Database db;
 	const char* name1 = "George Costanz";
-	const char* name2 = "George Costanzb";
+	const char* name2 = "George Costanza";
 	const char* name3 = "George Costanzas";
-	const char* name4 = "George Costanza";
 
 	db.add_employee(name1, 1400, 1, 1, "1");
 	auto d = db.add_employee(name2, 1400, 1, 1, "1");
 	db.add_employee(name3, 1400, 1, 1, "1");
-	auto orig = db.add_employee(name4, 1400, 1, 1, "1");
+	auto orig = db.add_employee(name2, 1400, 1, 1, "1");
 	db.delete_employee(d);
 
-	auto found = db.find_employee(name4);
+	auto found = db.find_employee(name2);
 
 	ASSERT_EQ(orig, found);
 }
