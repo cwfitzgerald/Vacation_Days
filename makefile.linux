@@ -11,10 +11,10 @@ OUTPUT_FOLDER := bin/
 EXTANT     = 
 
 CXXFLAGS  := 
-WARNINGS  := -Wall -Wextra
-FULLWARN  := -Wall -Wextra -Wpedantic
+WARNINGS  := -Wall -Wextra -Wpedantic
+FULLWARN  := -Wall -Wextra -Wpedantic -Wconversion
 STD       := -std=c++1z 
-OPTIMIZE  := -g
+OPTIMIZE  := -O3
 ARCH      := 
 DEBUG     := 
 DEFINES   := 
@@ -56,9 +56,9 @@ all: checkdirs 64bit
 release: OPTIMIZE = -O3
 release: checkdirs 64bit
 
-test: INCLUDES += -Iinclude/$(LIB_NAME) -Igtest/googletest/include
+test: INCLUDES += -Iinclude/$(LIB_NAME) -Igtest/googletest/include -DLIBVACATIONDB_TEST -DVACATIONDB_EXPORT
 test: LINK += gtest/googletest/make/gtest_main.a -Lbin/ -lvacationdb -lpthread
-test: CXXFLAGS := 
+test: CXXFLAGS += -g -O0
 test: checkdirs bin/$(LIB_NAME)_test
 
 vpath %.cpp $(SRC_DIR)
@@ -66,12 +66,12 @@ vpath %.cpp $(SRC_DIR)
 define make-goal
 $1/%.o: %.cpp
 	@echo $$(CXX) $$<
-	@$$(CXX) $$(WARNINGS) $$(STD) $$(OPTIMIZE) $$(MODE) $$(ARCH) $$(DEBUG) $$(DEFINES) $$(INCLUDES) $$(CXXFLAGS) -c $$< -o $$@
+	@$$(CXX) $$(WARNINGS) $$(STD) $$(OPTIMIZE) $$(MODE) $$(ARCH) $$(DEBUG) $$(DEFINES) $$(INCLUDES) $$(CXXFLAGS) -fPIC -c $$< -o $$@
 endef
 
 
 bin/$(LIB_NAME).so: CXXFLAGS += -fPIC -fvisibility=hidden 
-bin/$(LIB_NAME).so: INCLUDES  = -Iinclude/$(LIB_NAME) -Irapidjson/include 
+bin/$(LIB_NAME).so: INCLUDES += -Iinclude/$(LIB_NAME) -Irapidjson/include 
 bin/$(LIB_NAME).so: DEFINES   = -DVACATIONDB_EXPORT	
 bin/$(LIB_NAME).so: LINK      = -lpthread -lgmp
 bin/$(LIB_NAME).so: $(LIB_OBJ64)
@@ -84,7 +84,7 @@ bin/$(PROJECT_NAME): $(OBJ64) bin/$(LIB_NAME).so
 
 bin/$(LIB_NAME)_test: $(TESTL_OBJN) bin/$(LIB_NAME).so
 	@echo Linking $@ 
-	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK)
+	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK) -lpthread -lgmp
 
 checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) bin
 	

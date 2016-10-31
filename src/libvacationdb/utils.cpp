@@ -1,7 +1,14 @@
 #include "database_impl.hpp"
 
+#include <algorithm>
+#include <iterator>
+
 namespace Vacationdb::_detail {
-	boost::gregorian::date create_date_safe(uint16_t start_year, uint16_t start_month, uint16_t start_day) {
+#ifdef LIBVACATIONDB_TEST
+	VACATIONDB_SHARED
+#endif
+	boost::gregorian::date create_date_safe(uint16_t start_year, uint16_t start_month,
+	                                        uint16_t start_day) {
 		boost::gregorian::date ret;
 		try {
 			ret = boost::gregorian::date{start_year, start_month, start_day};
@@ -14,12 +21,74 @@ namespace Vacationdb::_detail {
 	}
 
 	boost::multiprecision::mpq_rational create_number_safe(const char* value) {
+		std::string source(value);
+		// Parse the number to transform decimals into forms that mpq_rational will
+		// take.
+		// The numbers need to have integer numerators and denominators.
+
+		std::string numerator;
+		std::string denominator;
+
+		auto division_location = std::find(source.begin(), source.end(), '/');
+
+		// If it has a denominator
+		bool has_denom = division_location != source.end();
+
+		// Figures out how many decimal places each has in order to convert.
+		size_t num_decimal_places = 0;
+		size_t den_decimal_places = 0;
+
+		// The search will stop at the first . or /
+		auto num_decimal_loc = std::find_if(source.begin(), source.end(),
+		                                    [](char c) { return (c == '.') || (c == '/'); });
+
+		// If it did not stop on the /
+		if (num_decimal_loc != division_location) {
+			// This works even if division_location == source.end()
+			size_t dist = std::abs(std::distance(num_decimal_loc, division_location));
+			num_decimal_places = dist - 1;
+		}
+
+		// If there is a denominator find the period
+		if (has_denom) {
+			auto den_decimal_loc = std::find(division_location, source.end(), '.');
+			if (den_decimal_loc != source.end()) {
+				size_t dist = std::abs(std::distance(den_decimal_loc, source.end()));
+				den_decimal_places = dist - 1;
+			}
+		}
+
+		size_t total_offset = std::max(num_decimal_places, den_decimal_places);
+
+		// Back inserters
+		std::back_insert_iterator<std::string> num_back_insert(numerator);
+		std::back_insert_iterator<std::string> den_back_insert(denominator);
+
+		// Copy numerator
+		std::copy_if(source.begin(), division_location, num_back_insert,
+		             [](char c) { return !(c == '.'); });
+
+		// Fill in difference in zeros
+		std::fill_n(num_back_insert, total_offset - num_decimal_places, '0');
+		if (has_denom) {
+			// Copy denom
+			std::copy_if(division_location + 1, source.end(), den_back_insert,
+			             [](char c) { return !(c == '.'); });
+
+			std::fill_n(num_back_insert, total_offset - den_decimal_places, '0');
+		}
+		else {
+			// Fill in proper denominator
+			denominator = "1";
+			std::fill_n(den_back_insert, total_offset, '0');
+		}
+
 		boost::multiprecision::mpq_rational ret;
 		try {
-			ret = boost::multiprecision::mpq_rational{value};
+			ret = boost::multiprecision::mpq_rational{numerator, denominator};
 		}
-		catch (boost::exception_detail::clone_impl<boost::exception_detail::error_info_injector<std::runtime_error>>&
-		           exep) {
+		catch (boost::exception_detail::clone_impl<
+		       boost::exception_detail::error_info_injector<std::runtime_error>>& exep) {
 			throw Vacationdb::Invalid_Number();
 		}
 		return ret;
@@ -46,7 +115,7 @@ namespace Vacationdb::_detail {
 	void db_impl::validate(PersonID_t p, Extra_TimeID_t e) {
 		bool valid_index_p = p < people.size();
 		if (valid_index_p) {
-			bool valid_p       = people[p].valid;
+			bool valid_p = people[p].valid;
 			bool valid_index_e = e < people[p].extra_time.size();
 			if (valid_p && valid_index_e) {
 				bool valid_e = people[p].extra_time[e].valid;
@@ -72,7 +141,7 @@ namespace Vacationdb::_detail {
 	void db_impl::validate(DayID_t d, RuleID_t r) {
 		bool valid_index_d = d < day_types.size();
 		if (valid_index_d) {
-			bool valid_d       = day_types[d].valid;
+			bool valid_d = day_types[d].valid;
 			bool valid_index_r = r < day_types[d].rules.size();
 			if (valid_d && valid_index_r) {
 				bool valid_r = day_types[d].rules[r].valid;
@@ -110,6 +179,6 @@ namespace Vacationdb::_detail {
 		io_lock.store(false);
 		io_percentage.store(0);
 		io_future = decltype(io_future)();
-		io_curop  = IO_Status_t::NOOP;
+		io_curop = IO_Status_t::NOOP;
 	}
 }

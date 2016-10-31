@@ -13,7 +13,7 @@ OUTPUT_FOLDER := bin/
 EXTANT     = _x64.exe
 
 CXXFLAGS  := -fopenmp
-WARNINGS  := -Wall -Wextra
+WARNINGS  := -Wall -Wextra -Wpedantic
 FULLWARN  := -Wall -Wextra -Wpedantic
 STD       := -std=c++1z 
 OPTIMIZE  := -O3

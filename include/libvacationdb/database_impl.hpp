@@ -13,7 +13,7 @@
 #include "../vacationdb.hpp"
 
 namespace Vacationdb::_detail {
-	using Date   = boost::gregorian::date;
+	using Date = boost::gregorian::date;
 	using Number = boost::multiprecision::mpq_rational;
 
 	struct Person {
@@ -51,10 +51,13 @@ namespace Vacationdb::_detail {
 		bool valid = true;
 	};
 
-	static_assert(std::is_move_constructible<Day>::value, "Value must be move constructible");
-	static_assert(std::is_move_assignable<Day>::value, "Value must be move assignable");
+	static_assert(std::is_move_constructible<Day>::value, "Day must be move constructible");
+	static_assert(std::is_move_assignable<Day>::value, "Day must be move assignable");
 
 	Date create_date_safe(uint16_t start_year, uint16_t start_month, uint16_t start_day);
+#ifdef LIBVACATIONDB_TEST
+	VACATIONDB_SHARED
+#endif
 	Number create_number_safe(const char* value);
 
 	class db_impl {

@@ -36,7 +36,7 @@
 		operator T&() {                        \
 			return t;                          \
 		};                                     \
-	};
+	}
 
 #if defined(_WIN32) || defined(_CYGWIN)
 	#ifdef VACATIONDB_EXPORT
@@ -66,31 +66,31 @@ namespace Vacationdb {
 		};
 	}
 
-	struct Invalid_Date {
+	struct Invalid_Date  : public std::exception{
 		virtual const char * what () const noexcept {
 			return "The date supplied was invalid";
 		}
 	};
 
-	struct Invalid_Number {
+	struct Invalid_Number  : public std::exception{
 		virtual const char * what () const noexcept {
 			return "The number supplied was invalid";
 		}
 	};
 
-	struct Invalid_Index {
+	struct Invalid_Index : public std::exception {
 		virtual const char * what () const noexcept {
 			return "The index supplied was invalid";
 		}
 	};
 
-	struct Employee_Not_Found {
+	struct Employee_Not_Found : public std::exception {
 		virtual const char * what () const noexcept {
 			return "The employee asked for was not found";
 		}
 	};
 
-	struct Day_Not_Found {
+	struct Day_Not_Found : public std::exception {
 		virtual const char * what () const noexcept {
 			return "The vacation day type asked for was not found";
 		}
@@ -153,6 +153,13 @@ namespace Vacationdb {
 		} operation;
 		float percentage;
 	};
+
+	struct Date_t {
+		uint16_t year;
+		uint16_t month;
+		uint16_t day;
+		std::string amount;
+	};
 	
 	class VACATIONDB_SHARED Database {
 	  public:
@@ -210,6 +217,8 @@ namespace Vacationdb {
 
 		void add_person_day   (const PersonID_t, const DayID_t, uint16_t year, uint16_t month, uint16_t day, const char * value);
 		void remove_person_day(const PersonID_t, const DayID_t, uint16_t year, uint16_t month, uint16_t day);
+
+		std::vector<Date_t> list_person_days(const PersonID_t, const DayID_t);
 
 		std::string                query_person_days(const PersonID_t p, const DayID_t d, uint16_t year, uint16_t month, uint16_t day);
 		std::vector<Person_Days_t> query_person_days(const PersonID_t p, uint16_t year, uint16_t month, uint16_t day); 

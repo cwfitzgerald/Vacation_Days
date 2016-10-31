@@ -14,7 +14,7 @@ TEST(DB_EMPLOYEE_CATALOG, AddAccuracy) {
 	Vacationdb::Database db;
 
 	const char* name = "Employee Name";
-	auto e           = db.add_employee(name, 2015, 2, 23, "2");
+	auto e = db.add_employee(name, 2015, 2, 23, "2");
 
 	auto info = db.get_employee_info(e);
 	ASSERT_EQ(info.id, e);
@@ -93,7 +93,7 @@ TEST(DB_EMPLOYEE_CATALOG, Find) {
 	Vacationdb::Database db;
 	const char* name = "George Costanza";
 
-	auto orig  = db.add_employee(name, 1400, 1, 1, "1");
+	auto orig = db.add_employee(name, 1400, 1, 1, "1");
 	auto found = db.find_employee(name);
 
 	ASSERT_EQ(orig, found);
@@ -109,7 +109,7 @@ TEST(DB_EMPLOYEE_CATALOG, FindMultiName) {
 	db.add_employee(name1, 1400, 1, 1, "1");
 	db.add_employee(name2, 1400, 1, 1, "1");
 	db.add_employee(name3, 1400, 1, 1, "1");
-	auto orig  = db.add_employee(name4, 1400, 1, 1, "1");
+	auto orig = db.add_employee(name4, 1400, 1, 1, "1");
 	auto found = db.find_employee(name4);
 
 	ASSERT_EQ(orig, found);
