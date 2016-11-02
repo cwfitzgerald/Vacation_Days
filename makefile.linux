@@ -42,6 +42,8 @@ LIB_OBJ64     := $(patsubst %.o,%.o, $(LIB_OBJN))
 TESTL_SRC  := $(wildcard src/$(LIB_NAME)/tests/*.cpp)
 TESTL_OBJN := $(patsubst src/%.cpp,obj/%.o,$(TESTL_SRC))
 
+TEST_BUILD_DIR := obj/libvacationdb/tests
+
 .PHONY: all checkdirs clean 64bit release
 
 all: checkdirs 64bit
@@ -86,7 +88,7 @@ bin/$(LIB_NAME)_test: $(TESTL_OBJN) bin/$(LIB_NAME).so
 	@echo Linking $@ 
 	@$(CXX) $(DEBUG) $(OPTIMIZE) $(MODE) $(ARCH) $(CXXFLAGS) $^ -o $@ $(LINK) -lpthread -lgmp
 
-checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR) bin
+checkdirs: $(BUILD_DIR) $(LIB_BUILD_DIR)$(TEST_BUILD_DIR) bin
 	
 
 bin:
@@ -96,6 +98,9 @@ $(BUILD_DIR):
 	@mkdir -p $@
 
 $(LIB_BUILD_DIR):
+	@mkdir -p $@
+
+$(TEST_BUILD_DIR):
 	@mkdir -p $@
 
 clean:

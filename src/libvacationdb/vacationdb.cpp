@@ -371,8 +371,8 @@ namespace Vacationdb {
 	// Querying the amounts of days that employees have //
 	//////////////////////////////////////////////////////
 
-	void Database::add_person_day(const PersonID_t p, const DayID_t d, uint16_t year,
-	                              uint16_t month, uint16_t day, const char* value) {
+	void Database::add_day_off(const PersonID_t p, const DayID_t d, uint16_t year, uint16_t month,
+	                           uint16_t day, const char* value) {
 		impl->block_if_locked();
 		impl->validate(p);
 		impl->validate(d);
@@ -384,8 +384,8 @@ namespace Vacationdb {
 		    _detail::Person::Day_Taken_t{std::move(date), std::move(val)});
 	}
 
-	void Database::remove_person_day(const PersonID_t p, const DayID_t d, uint16_t year,
-	                                 uint16_t month, uint16_t day) {
+	void Database::remove_day_off(const PersonID_t p, const DayID_t d, uint16_t year,
+	                              uint16_t month, uint16_t day) {
 		impl->block_if_locked();
 		impl->validate(p);
 		impl->validate(d);
@@ -401,7 +401,7 @@ namespace Vacationdb {
 		}
 	}
 
-	std::vector<Date_t> Database::list_person_days(const PersonID_t p, const DayID_t d) {
+	std::vector<Date_t> Database::list_days_off(const PersonID_t p, const DayID_t d) {
 		impl->block_if_locked();
 		impl->validate(p);
 		impl->validate(d);
@@ -423,8 +423,8 @@ namespace Vacationdb {
 		return ret;
 	}
 
-	std::string Database::query_person_days(const PersonID_t p, const DayID_t d, uint16_t year,
-	                                        uint16_t month, uint16_t day) {
+	std::string Database::query_vacation_days(const PersonID_t p, const DayID_t d, uint16_t year,
+	                                          uint16_t month, uint16_t day) {
 		impl->block_if_locked();
 		impl->validate(p);
 		impl->validate(d);
@@ -437,7 +437,8 @@ namespace Vacationdb {
 				Extra_Time_Event = 0,
 				Day_Rules_Event = 1,
 				Year_Start_Event = 2,
-				End_of_Query_Event = 3
+				Day_Off_Event = 3,
+				End_of_Query_Event = 4
 			} tag;
 
 			struct Extra_Time_Event_t {
@@ -449,7 +450,12 @@ namespace Vacationdb {
 				_detail::Number value;
 			};
 
-			boost::variant<Extra_Time_Event_t, Day_Rules_Event_t, std::nullptr_t> data;
+			struct Day_Off_Event_t {
+				_detail::Number value;
+			};
+
+			boost::variant<Extra_Time_Event_t, Day_Rules_Event_t, Day_Off_Event_t, std::nullptr_t>
+			    data;
 		};
 
 		// References to appropriate data
@@ -463,11 +469,12 @@ namespace Vacationdb {
 		size_t num_ete = person.extra_time.size() * 2;                        // Extra time events
 		size_t num_dre = day_type.rules.size();                               // Day rule events
 		size_t num_yse = ((query_date - person.start_date).days() / 365) + 2; // Year start events
+		size_t num_doe = person.days_taken[d].size();                         // Day taken event
 		size_t num_eqe = 1;                                                   // End of query event
 
 		// Create and reserve the appropriate amount of space in the array
 		std::vector<Event_t> events;
-		events.reserve(num_ete + num_dre + num_yse + num_eqe);
+		events.reserve(num_ete + num_dre + num_yse + num_doe + num_eqe);
 
 		// Add all extra time events
 		for (auto&& data : person.extra_time) {
@@ -489,7 +496,7 @@ namespace Vacationdb {
 			auto e_t = Event_t::Day_Rules_Event;
 
 			if (data.valid) {
-				auto date = person.start_date + months{static_cast<int32_t>(data.month_begin)};
+				auto date = person.start_date + months{static_cast<int32_t>(data.month_begin) - 1};
 				auto event = s_t{data.days_per_year};
 
 				events.push_back(Event_t{std::move(date), e_t, std::move(event)});
@@ -510,6 +517,15 @@ namespace Vacationdb {
 			}
 		}
 
+		// Add add day off events
+		for (auto&& data : person.days_taken[d]) {
+			using s_t = Event_t::Day_Off_Event_t;
+			auto e_t = Event_t::Day_Off_Event;
+
+			auto event = s_t{data.value};
+			events.push_back(Event_t{data.day, e_t, event});
+		}
+
 		// Add the single end of query event
 		events.push_back(Event_t{query_date, Event_t::End_of_Query_Event, nullptr});
 
@@ -525,8 +541,19 @@ namespace Vacationdb {
 
 		std::sort(events.begin(), events.end(), sort_func);
 
+		// Use a state machine to calculate the amount of days accrued.
+		_detail::Number accrued{0};
+		_detail::Number& default_percent = person.percent_time;
+		_detail::Number current_rate{0};
+		_detail::Number current_percent = default_percent;
+		_detail::Date current_date = person.start_date;
+		bool end_of_query = false;
+
+		// Length of a year in days
+		auto year_val = _detail::create_number_safe("365.2422");
+
 		for (auto&& event : events) {
-			std::cout << event.date << " - ";
+			std::cout << "\n----------------------\n" << event.date << " - ";
 			switch (event.tag) {
 				case Event_t::Extra_Time_Event:
 					std::cout << "Extra time event\n";
@@ -537,21 +564,24 @@ namespace Vacationdb {
 				case Event_t::Year_Start_Event:
 					std::cout << "Year start event\n";
 					break;
+				case Event_t::Day_Off_Event:
+					std::cout << "Day Off Event\n";
+					break;
 				case Event_t::End_of_Query_Event:
 					std::cout << "End of query event\n";
 					break;
 			}
-		}
 
-		// Use a state machine to calculate the amount of days accrued.
-		_detail::Number accrued{0};
-		_detail::Number& default_percent = person.percent_time;
-		_detail::Number current_rate{0};
-		_detail::Number current_percent = default_percent;
-		_detail::Date current_date = person.start_date;
-		bool end_of_query = false;
+			auto diff = (event.date - current_date);
+			auto diff_days = diff.days();
+			if (diff_days >= 0) {
+				std::cout << " Days: " << diff_days << '\n';
+				auto diff_val = _detail::Number{diff_days};
+				auto years = diff_val / year_val;
+				accrued += (years * current_rate * current_percent);
+				current_date = event.date;
+			}
 
-		for (auto&& event : events) {
 			switch (event.tag) {
 				case Event_t::Extra_Time_Event: {
 					auto&& data = boost::get<Event_t::Extra_Time_Event_t>(event.data);
@@ -566,7 +596,9 @@ namespace Vacationdb {
 
 				case Event_t::Day_Rules_Event: {
 					auto&& data = boost::get<Event_t::Day_Rules_Event_t>(event.data);
+					std::cout << " Rate: " << data.value << '\n';
 					current_rate = data.value;
+					break;
 				}
 
 				case Event_t::Year_Start_Event: {
@@ -578,56 +610,45 @@ namespace Vacationdb {
 					break;
 				}
 
+				case Event_t::Day_Off_Event: {
+					auto&& data = boost::get<Event_t::Day_Off_Event_t>(event.data);
+					if (diff_days >= 0) {
+						accrued -= data.value;
+					}
+					break;
+				}
+
 				case Event_t::End_of_Query_Event: {
 					end_of_query = true;
 					break;
 				}
 			}
 
-			auto diff = (event.date - current_date);
-			auto diff_days = diff.days();
-			auto diff_val = _detail::Number{diff_days};
-			auto year_val = _detail::create_number_safe("365.24");
-			auto years = diff_val / year_val;
-			accrued += (years * current_rate * current_percent);
-			current_date = event.date;
-
-			std::cout << accrued << '\n';
+			std::cout << "Value: " << accrued << '\n';
 
 			if (end_of_query) {
 				break;
 			}
 		}
 
-		// Calculate the amount of vacation days taken
-		auto accumulate_func = [&query_date](_detail::Number& val,
-		                                     _detail::Person::Day_Taken_t& dt) {
-			// Add the value of the date, only if the date is before the query date
-			return val + (dt.day < query_date ? dt.value : _detail::Number{0});
-		};
-
-		auto taken = std::accumulate(person.days_taken[d].begin(), person.days_taken[d].end(),
-		                             _detail::Number{0}, accumulate_func);
-
-		_detail::Number total_val = accrued - taken;
-
 		// Convert amount to string, and return
-		auto outstring = total_val.convert_to<std::string>();
+		auto outstring = accrued.convert_to<std::string>();
 		return outstring;
 	}
 
-	std::vector<Person_Days_t> Database::query_person_days(const PersonID_t p, uint16_t year,
-	                                                       uint16_t month, uint16_t day) {
+	std::vector<Person_Days_t> Database::query_vacation_days(const PersonID_t p, uint16_t year,
+	                                                         uint16_t month, uint16_t day) {
 		impl->block_if_locked();
 		impl->validate(p);
 
 		std::vector<Person_Days_t> ret;
+		ret.reserve(impl->day_types.size());
 
 		size_t i = 0;
 		for (auto&& day_type : impl->day_types) {
 			if (day_type.valid) {
 				auto&& day_name = day_type.name;
-				auto value = this->query_person_days(p, DayID_t{i}, year, month, day);
+				auto value = this->query_vacation_days(p, DayID_t{i}, year, month, day);
 				ret.push_back(Person_Days_t{day_name, value});
 			}
 			i++;

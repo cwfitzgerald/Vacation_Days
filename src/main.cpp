@@ -21,7 +21,7 @@ int main(int argc, char* argv[]) {
 		auto eid = db.add_employee("Bob", 2016, 10, 31, "1");
 		auto did = db.add_day("Vacation", "0", "5");
 
-		result = db.query_person_days(eid, did, 2016, 10, 31);
+		result = db.query_vacation_days(eid, did, 2016, 10, 31);
 	}
 	catch (std::exception& e) {
 		std::cerr << e.what() << '\n';
