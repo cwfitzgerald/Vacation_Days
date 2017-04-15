@@ -4,9 +4,7 @@
 #include <iterator>
 
 namespace Vacationdb::_detail {
-#ifdef LIBVACATIONDB_TEST
 	VACATIONDB_SHARED
-#endif
 	boost::gregorian::date create_date_safe(uint16_t start_year, uint16_t start_month,
 	                                        uint16_t start_day) {
 		boost::gregorian::date ret;

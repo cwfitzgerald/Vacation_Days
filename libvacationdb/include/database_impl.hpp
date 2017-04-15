@@ -10,7 +10,7 @@
 #include <type_traits>
 #include <vector>
 
-#include "../vacationdb.hpp"
+#include "vacationdb.hpp"
 
 namespace Vacationdb::_detail {
 	using Date = boost::gregorian::date;
@@ -55,9 +55,7 @@ namespace Vacationdb::_detail {
 	static_assert(std::is_move_assignable<Day>::value, "Day must be move assignable");
 
 	Date create_date_safe(uint16_t start_year, uint16_t start_month, uint16_t start_day);
-#ifdef LIBVACATIONDB_TEST
 	VACATIONDB_SHARED
-#endif
 	Number create_number_safe(const char* value);
 
 	class db_impl {

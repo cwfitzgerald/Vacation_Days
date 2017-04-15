@@ -1,4 +1,4 @@
-#include "../vacationdb.hpp"
+#include "vacationdb.hpp"
 #include "gtest/gtest.h"
 
 TEST(DB_EMPLOYEE_CATALOG, AddDelete) {

@@ -1,8 +1,10 @@
-#include "../vacationdb.hpp"
 #include "database_impl.hpp"
+#include "vacationdb.hpp"
 #include "gtest/gtest.h"
 #include <iostream>
 #include <string>
+
+bool within(std::string& value, const char* expected, const char* epsilon);
 
 bool within(std::string& value, const char* expected, const char* epsilon) {
 	boost::multiprecision::mpq_rational val{value};
@@ -12,11 +14,9 @@ bool within(std::string& value, const char* expected, const char* epsilon) {
 	auto diff = boost::multiprecision::abs(val - expect);
 	bool result = diff <= e;
 
-	if (!result) {
-		std::cout << "EXPECTED: " << expect << '\n';
-		std::cout << "  ACTUAL: " << val << '\n';
-		std::cout << "    DIFF: " << diff << '\n';
-	}
+	std::cout << "EXPECTED: " << expect << '\n';
+	std::cout << "  ACTUAL: " << val << '\n';
+	std::cout << "    DIFF: " << diff << '\n';
 
 	return result;
 }
@@ -127,7 +127,7 @@ TEST(CALC_ACCURACY, SingleDayRule) {
 
 	result = db.query_vacation_days(eid, did, 2018, 1, 1);
 
-	ASSERT_EQ(within(result, "15", "1/10"), true);
+	ASSERT_EQ(within(result, "15", "1/2"), true);
 }
 
 TEST(CALC_ACCURACY, MultipleDayRules) {
@@ -144,7 +144,7 @@ TEST(CALC_ACCURACY, MultipleDayRules) {
 
 	result = db.query_vacation_days(eid, did, 2019, 1, 1);
 
-	ASSERT_EQ(within(result, "75", "1/10"), true);
+	ASSERT_EQ(within(result, "75", "1/2"), true);
 }
 
 TEST(CALC_ACCURACY, SingleExtraWorkTime) {
@@ -161,7 +161,7 @@ TEST(CALC_ACCURACY, SingleExtraWorkTime) {
 
 	result = db.query_vacation_days(eid, did, 2018, 1, 1);
 
-	ASSERT_EQ(within(result, "15", "1/10"), true);
+	ASSERT_EQ(within(result, "15", "1/2"), true);
 }
 
 TEST(CALC_ACCURACY, MultipleExtraWorkTime) {
@@ -179,7 +179,24 @@ TEST(CALC_ACCURACY, MultipleExtraWorkTime) {
 
 	result = db.query_vacation_days(eid, did, 2019, 1, 1);
 
-	ASSERT_EQ(within(result, "45/2", "1/10"), true);
+	ASSERT_EQ(within(result, "45/2", "1/2"), true);
+}
+
+TEST(CALC_ACCURACY, ThousandYears) {
+	Vacationdb::Database db;
+
+	std::string result;
+
+	auto eid = db.add_employee("TestCase1", 2000, 1, 1, "1");
+	auto did = db.add_day("Vacation", "-1", "0");
+
+	db.edit_day_add_rule(did, 1, "24");
+
+	result = db.query_vacation_days(eid, did, 3000, 1, 1);
+	ASSERT_EQ(within(result, "24000", "1/2"), true);
+
+	result = db.query_vacation_days(eid, did, 3000, 7, 3);
+	ASSERT_EQ(within(result, "24012", "1/2"), true);
 }
 
 TEST(CALC_ACCURACY, TestCase1) {
@@ -219,9 +236,12 @@ TEST(CALC_ACCURACY, TestCase1) {
 	// Personal Days //
 	///////////////////
 
-	// auto persid = db.add_day("Personal", "0", "1");
+	auto persid = db.add_day("Personal", "0", "1");
+	db.edit_day_add_rule(persid, 1, "4");
 
-	// db.
+	db.add_day_off(eid, persid, 2015, 1, 22, "1");
+	db.add_day_off(eid, persid, 2015, 4, 6, "1");
+	db.add_day_off(eid, persid, 2015, 4, 22, "1");
 
 	///////////////
 	// Sick Days //
@@ -237,18 +257,22 @@ TEST(CALC_ACCURACY, TestCase1) {
 	/////////////////////////
 
 	std::string vacay_result;
-	// std::string pers_result;
+	std::string pers_result;
 	std::string sick_result;
 
 	vacay_result = db.query_vacation_days(eid, vacayid, 2015, 5, 31);
+	pers_result = db.query_vacation_days(eid, persid, 2015, 5, 31);
 	sick_result = db.query_vacation_days(eid, sickid, 2015, 5, 31);
 
 	ASSERT_EQ(within(vacay_result, "63/2", "1/4"), true);
+	ASSERT_EQ(within(pers_result, "0", "1/2"), true);
 	ASSERT_EQ(within(sick_result, "865/100", "1/4"), true);
 
 	vacay_result = db.query_vacation_days(eid, vacayid, 2015, 12, 31);
+	pers_result = db.query_vacation_days(eid, persid, 2015, 12, 31);
 	sick_result = db.query_vacation_days(eid, sickid, 2015, 12, 31);
 
 	ASSERT_EQ(within(vacay_result, "34", "1/4"), true);
+	ASSERT_EQ(within(pers_result, "2", "1/2"), true);
 	ASSERT_EQ(within(sick_result, "1446/100", "1/4"), true);
 }

@@ -1,0 +1,52 @@
+cmake_minimum_required(VERSION 3.1.0)
+
+add_subdirectory(gtest)
+
+if(${WIN32})
+	add_compile_options(/Zc:rvalueCast /std:c++latest)
+	if(NOT ${VACATIONTIME_NOLTO})
+		set(VACATIONTIME_LTO_FLAGS "/LTCG /GL")
+	endif()
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Ox /Ot ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} /Ox /Ot ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_LINK_FLAGS_RELEASE "${CMAKE_LINK_FLAGS_RELEASE} /Ox /Ot ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_LINK_FLAGS_RELWITHDEBINFO "${CMAKE_LINK_FLAGS_RELWITHDEBINFO} /Ox /Ot ${VACATIONTIME_LTO_FLAGS}")
+else(${WIN32})
+	add_compile_options(-std=c++1z -Wall -Wextra -Wpedantic -Wno-unknown-warning-option -Wstrict-aliasing=3 -Wdisabled-optimization -Wcast-align -Wcast-qual -Wctor-dtor-privacy -Wformat=2 -Winit-self -Winit-self -Wlogical-op -Wmissing-declarations -Wmissing-include-dirs -Wnoexcept -Wold-style-cast -Woverloaded-virtual -Wredundant-decls -Wshadow -Wconversion -Wno-sign-conversion -Wstrict-null-sentinel -Wstrict-overflow=5 -Wswitch-default)
+	if(NOT ${VACATIONTIME_NOLTO})
+		set(VACATIONTIME_LTO_FLAGS "-flto ")
+	endif()
+	set(VACATIONTIME_EXTRA_FLAGS "-O3 -march=native")
+	set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} ${VACATIONTIME_EXTRA_FLAGS} ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CMAKE_CXX_FLAGS_RELWITHDEBINFO} ${VACATIONTIME_EXTRA_FLAGS} ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_LINK_FLAGS_RELEASE "${CMAKE_LINK_FLAGS_RELEASE} ${VACATIONTIME_EXTRA_FLAGS} ${VACATIONTIME_LTO_FLAGS}")
+	set(CMAKE_LINK_FLAGS_RELWITHDEBINFO "${CMAKE_LINK_FLAGS_RELWITHDEBINFO} ${VACATIONTIME_EXTRA_FLAGS} ${VACATIONTIME_LTO_FLAGS}")
+endif(${WIN32})
+
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_SOURCE_DIR}/cmake)
+
+add_subdirectory(libvacationdb)
+add_subdirectory(vacationtime)
+
+if(${WIN32})
+	file( WRITE "${CMAKE_CURRENT_BINARY_DIR}/${PROJECT_NAME}.vcxproj.user" 
+	    "<?xml version=\"1.0\" encoding=\"utf-8\"?>     \
+	    <Project ToolsVersion=\"4.0\" xmlns=\"http://schemas.microsoft.com/developer/msbuild/2003\">
+	    <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Debug|x64'\">
+	        <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+	        <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+	    </PropertyGroup>
+	    <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='MinSizeRel|x64'\">
+	        <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+	        <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+	    </PropertyGroup>
+	    <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='Release|x64'\">
+	        <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+	        <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+	    </PropertyGroup>
+	    <PropertyGroup Condition=\"'$(Configuration)|$(Platform)'=='RelWithDebInfo|x64'\">
+	        <LocalDebuggerWorkingDirectory>$(OutDir)</LocalDebuggerWorkingDirectory>
+	        <DebuggerFlavor>WindowsLocalDebugger</DebuggerFlavor>
+	    </PropertyGroup>
+	    </Project>")
+endif(${WIN32})

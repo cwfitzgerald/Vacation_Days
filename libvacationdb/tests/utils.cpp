@@ -1,6 +1,8 @@
 #include "database_impl.hpp"
 #include "gtest/gtest.h"
 
+std::string gen_number(const char* val);
+
 std::string gen_number(const char* val) {
 	auto raw_num = Vacationdb::_detail::create_number_safe(val);
 	return raw_num.convert_to<std::string>();

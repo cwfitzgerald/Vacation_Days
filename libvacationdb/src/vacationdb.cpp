@@ -9,8 +9,8 @@
 #include <sstream>
 #include <string>
 
-#include "../vacationdb.hpp"
 #include "database_impl.hpp"
+#include "vacationdb.hpp"
 
 namespace Vacationdb {
 	void _detail::db_impl_deleter::operator()(db_impl* value) {
@@ -423,6 +423,8 @@ namespace Vacationdb {
 		return ret;
 	}
 
+#define LIBVACATIONDB_QUERY_DEBUG 0
+
 	std::string Database::query_vacation_days(const PersonID_t p, const DayID_t d, uint16_t year,
 	                                          uint16_t month, uint16_t day) {
 		impl->block_if_locked();
@@ -443,14 +445,18 @@ namespace Vacationdb {
 
 			struct Extra_Time_Event_t {
 				_detail::Number value;
-				enum : bool { enable = 1, disable = 0 } on;
+				enum OnOff_t : bool { enable = 1, disable = 0 } on;
 			};
 
 			struct Day_Rules_Event_t {
+				// Day_Rules_Event_t& operator=(const Day_Rules_Event_t&) = default;
+				// Day_Rules_Event_t& operator=(Day_Rules_Event_t&&) = default;
 				_detail::Number value;
 			};
 
 			struct Day_Off_Event_t {
+				// Day_Off_Event_t& operator=(const Day_Off_Event_t&) = default;
+				// Day_Off_Event_t& operator=(Day_Off_Event_t&&) = default;
 				_detail::Number value;
 			};
 
@@ -511,7 +517,8 @@ namespace Vacationdb {
 
 			int16_t start_year = person.start_date.year();
 			_detail::Date working_date;
-			for (size_t i = 1; (working_date = _detail::Date(start_year + i, 1, 1)) <= query_date;
+			for (size_t i = 1;
+			     (working_date = _detail::Date(uint16_t(start_year + i), 1, 1)) <= query_date;
 			     ++i) {
 				events.push_back(Event_t{working_date, e_t, nullptr});
 			}
@@ -550,9 +557,12 @@ namespace Vacationdb {
 		bool end_of_query = false;
 
 		// Length of a year in days
-		auto year_val = _detail::create_number_safe("365.2422");
+		auto year_val = _detail::create_number_safe("365");
+		auto leap_year_val = _detail::create_number_safe("366");
+		auto current_year_length = year_val;
 
 		for (auto&& event : events) {
+#if LIBVACATIONDB_QUERY_DEBUG
 			std::cout << "\n----------------------\n" << event.date << " - ";
 			switch (event.tag) {
 				case Event_t::Extra_Time_Event:
@@ -571,13 +581,16 @@ namespace Vacationdb {
 					std::cout << "End of query event\n";
 					break;
 			}
+#endif
 
 			auto diff = (event.date - current_date);
 			auto diff_days = diff.days();
 			if (diff_days >= 0) {
+#if LIBVACATIONDB_QUERY_DEBUG
 				std::cout << " Days: " << diff_days << '\n';
+#endif
 				auto diff_val = _detail::Number{diff_days};
-				auto years = diff_val / year_val;
+				auto years = diff_val / current_year_length;
 				accrued += (years * current_rate * current_percent);
 				current_date = event.date;
 			}
@@ -596,7 +609,9 @@ namespace Vacationdb {
 
 				case Event_t::Day_Rules_Event: {
 					auto&& data = boost::get<Event_t::Day_Rules_Event_t>(event.data);
+#if LIBVACATIONDB_QUERY_DEBUG
 					std::cout << " Rate: " << data.value << '\n';
+#endif
 					current_rate = data.value;
 					break;
 				}
@@ -607,6 +622,10 @@ namespace Vacationdb {
 						accrued = std::min(accrued, day_type.rollover);
 					}
 					accrued += day_type.yearly_bonus;
+					current_year_length =
+					    boost::gregorian::gregorian_calendar::is_leap_year(event.date.year())
+					        ? leap_year_val
+					        : year_val;
 					break;
 				}
 
@@ -622,9 +641,13 @@ namespace Vacationdb {
 					end_of_query = true;
 					break;
 				}
+				default:
+					break;
 			}
 
+#if LIBVACATIONDB_QUERY_DEBUG
 			std::cout << "Value: " << accrued << '\n';
+#endif
 
 			if (end_of_query) {
 				break;
