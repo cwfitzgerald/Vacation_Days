@@ -5,6 +5,7 @@ addons:
     sources:
       - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
       - sourceline: 'ppa:ubuntu-toolchain-r/test'
+      - sourceline: 'ppa:george-edison55/precise-backports'
     packages:
       - cmake
       - g++-6
