@@ -3,13 +3,8 @@ language: cpp
 addons:
   apt:
     sources:
-      - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
       - sourceline: 'ppa:ubuntu-toolchain-r/test'
-      - sourceline: 'ppa:george-edison55/precise-backports'
-      - sourceline: 'ppa:boost-latest/ppa'
     packages:
-      - cmake
-      - cmake-data
       - g++-6
       - libboost-all-dev
       - qtbase5-dev
@@ -26,5 +21,18 @@ matrix:
   include:
     - os: linux
       dist: precise
+      addons:
+        apt:
+          sources:
+            - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
+            - sourceline: 'ppa:george-edison55/precise-backports'
+            - sourceline: 'ppa:boost-latest/ppa'
+          packages:
+            - cmake
+            - cmake-data
+            - g++-6
+            - libboost1.54-all-dev
+            - qtbase5-dev
+            - libgmp-dev
     - os: linux
       dist: trusty
