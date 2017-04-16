@@ -10,7 +10,7 @@ addons:
       - g++-6
 
 before_script:
-  - CC=gcc-6 CXX=g++-6 mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=DEBUG
+  - mkdir build && cd build && cmake .. -DCMAKE_BUILD_TYPE=DEBUG -DCMAKE_C_COMPILER=gcc-6 -DCMAKE_CXX_COMPILER=g++-6
 
 script:
   - cd build && make
