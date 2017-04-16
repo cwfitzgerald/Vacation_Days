@@ -3,6 +3,7 @@ language: cpp
 addons:
   apt:
     sources:
+      - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
       - sourceline: 'ppa:ubuntu-toolchain-r/test'
     packages:
       - cmake
@@ -21,9 +22,5 @@ matrix:
   include:
     - os: linux
       dist: precise
-      addons:
-        apt:
-          sources:
-            - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
     - os: linux
       dist: trusty
