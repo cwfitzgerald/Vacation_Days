@@ -10,7 +10,7 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(Boost_USE_STATIC_LIBS       OFF) # only find static libs
 set(Boost_USE_MULTITHREADED      ON)
 set(Boost_USE_STATIC_RUNTIME    OFF)
-find_package(Boost 1.36.0 COMPONENTS system REQUIRED)
+find_package(Boost 1.53.0 COMPONENTS system REQUIRED)
 include_directories(${Boost_INCLUDE_DIRS})
 link_libraries(${Boost_LIBRARIES})
 
