@@ -1,5 +1,4 @@
 language: cpp
-dist: trusty
 
 addons:
   apt:
@@ -16,3 +15,9 @@ before_script:
 
 script:
   - make
+  - ./libvacationdb/tests/vacationdb_tests
+
+matrix:
+  include:
+    - dist: precise
+    - dist: trusty
