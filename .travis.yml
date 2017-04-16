@@ -6,6 +6,7 @@ addons:
       - sourceline: 'ppa:canonical-qt5-edgers/ubuntu1204-qt5'
       - sourceline: 'ppa:ubuntu-toolchain-r/test'
       - sourceline: 'ppa:george-edison55/precise-backports'
+      - sourceline: 'ppa:boost-latest/ppa'
     packages:
       - cmake
       - cmake-data
