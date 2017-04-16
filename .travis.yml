@@ -8,6 +8,7 @@ addons:
       - sourceline: 'ppa:george-edison55/precise-backports'
     packages:
       - cmake
+      - cmake-data
       - g++-6
       - libboost-all-dev
       - qtbase5-dev
