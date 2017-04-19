@@ -17,7 +17,7 @@ namespace Vacationdb {
 		delete value;
 	}
 
-	Database::Database() {
+    Database::Database() {
 		std::unique_ptr<_detail::db_impl, _detail::db_impl_deleter> n(new _detail::db_impl);
 		impl = std::move(n);
 	}
@@ -34,12 +34,12 @@ namespace Vacationdb {
 		auto start_date = _detail::create_date_safe(start_year, start_month, start_day);
 		auto wt = _detail::create_number_safe(work_time);
 
-		_detail::Person p{
-		    std::move(n),
-		    std::move(start_date),
-		    std::move(wt),
-		    {},
-		    std::vector<std::vector<_detail::Person::Day_Taken_t>>{impl->day_types.size()}};
+		_detail::Person p;
+		p.name = std::move(n);
+		p.start_date = std::move(start_date);
+		p.percent_time = std::move(wt);
+		p.extra_time = std::vector<_detail::Person::Extra_Time_t>();
+        p.days_taken = std::vector<std::vector<_detail::Person::Day_Taken_t>>{impl->day_types.size()};
 
 		impl->people.emplace_back(std::move(p));
 
@@ -82,8 +82,12 @@ namespace Vacationdb {
 		_detail::Date end_date = _detail::create_date_safe(end_year, end_month, end_day);
 		_detail::Number time_num = _detail::create_number_safe(time);
 
-		impl->people[employee].extra_time.push_back(_detail::Person::Extra_Time_t{
-		    std::move(start_date), std::move(end_date), std::move(time_num)});
+		_detail::Person::Extra_Time_t ett;
+		ett.begin = std::move(start_date);
+		ett.end = std::move(end_date);
+		ett.percent_time = std::move(time_num);
+
+		impl->people[employee].extra_time.push_back(std::move(ett));
 
 		return Extra_TimeID_t{impl->people[employee].extra_time.size() - 1};
 	}
@@ -216,7 +220,11 @@ namespace Vacationdb {
 		auto rollover_number = _detail::create_number_safe(rollover);
 		auto yearly_bonus_number = _detail::create_number_safe(yearly_bonus);
 
-		_detail::Day d{name, std::move(rollover_number), std::move(yearly_bonus_number), {}};
+		_detail::Day d;
+		d.name = name;
+		d.rollover = std::move(rollover_number);
+		d.yearly_bonus = std::move(yearly_bonus_number);
+		d.rules = std::vector<_detail::Day::Day_Rules_Data>();
 
 		impl->day_types.emplace_back(std::move(d));
 		impl->add_day_to_people();
@@ -256,7 +264,9 @@ namespace Vacationdb {
 
 		auto dpy = _detail::create_number_safe(days_per_year);
 
-		_detail::Day::Day_Rules_Data drd{month_start, std::move(dpy)};
+		_detail::Day::Day_Rules_Data drd;
+		drd.month_begin = month_start;
+		drd.days_per_year = std::move(dpy);
 
 		impl->day_types[day].rules.push_back(std::move(drd));
 

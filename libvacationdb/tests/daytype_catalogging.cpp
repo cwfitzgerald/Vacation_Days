@@ -150,7 +150,7 @@ TEST(DB_DAYTYPE_CATALOG, FindDeletedName) {
 	try {
 		db.find_day(name4);
 	}
-	catch (Vacationdb::Day_Not_Found& e) {
+    catch (Vacationdb::Day_Not_Found&) {
 		threw = true;
 	}
 
@@ -236,7 +236,7 @@ TEST(DB_DAYTYPE_CATALOG, ThrowOnUseAfterDelete) {
 	try {
 		db.edit_day_name(d, "blah");
 	}
-	catch (Vacationdb::Invalid_Index& e) {
+    catch (Vacationdb::Invalid_Index&) {
 		threw = true;
 	}
 
@@ -251,7 +251,7 @@ TEST(DB_DAYTYPE_CATALOG, ThrowOnInvalidIndex) {
 	try {
 		db.edit_day_name(Vacationdb::DayID_t{0}, "blah");
 	}
-	catch (Vacationdb::Invalid_Index& e) {
+    catch (Vacationdb::Invalid_Index&) {
 		threw = true;
 	}
 

@@ -150,7 +150,7 @@ TEST(DB_EMPLOYEE_CATALOG, FindDeletedName) {
 	try {
 		db.find_employee(name4);
 	}
-	catch (Vacationdb::Employee_Not_Found& e) {
+    catch (Vacationdb::Employee_Not_Found&) {
 		threw = true;
 	}
 
@@ -243,7 +243,7 @@ TEST(DB_EMPLOYEE_CATALOG, ThrowOnUseAfterDelete) {
 	try {
 		db.get_employee_info(e);
 	}
-	catch (Vacationdb::Invalid_Index& err) {
+    catch (Vacationdb::Invalid_Index&) {
 		threw = true;
 	}
 
@@ -257,7 +257,7 @@ TEST(DB_EMPLOYEE_CATALOG, ThrowOnInvalidNumber) {
 	try {
 		auto e = db.get_employee_info(Vacationdb::PersonID_t{1});
 	}
-	catch (Vacationdb::Invalid_Index& err) {
+    catch (Vacationdb::Invalid_Index&) {
 		threw = true;
 	}
 

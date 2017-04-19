@@ -7,9 +7,9 @@
 bool within(std::string& value, const char* expected, const char* epsilon);
 
 bool within(std::string& value, const char* expected, const char* epsilon) {
-	boost::multiprecision::mpq_rational val{value};
-	boost::multiprecision::mpq_rational expect{expected};
-	boost::multiprecision::mpq_rational e{epsilon};
+	Vacationdb::_detail::Number val{value};
+	Vacationdb::_detail::Number expect{expected};
+	Vacationdb::_detail::Number e{epsilon};
 
 	auto diff = boost::multiprecision::abs(val - expect);
 	bool result = diff <= e;

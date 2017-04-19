@@ -237,6 +237,9 @@ namespace Vacationdb {
 		IO_Status_t get_load_status();
 
 	  private:
-		std::unique_ptr<_detail::db_impl, _detail::db_impl_deleter> impl;
+#pragma warning( push )
+#pragma warning( disable: 4251 )
+		std::unique_ptr<_detail::db_impl, _detail::db_impl_deleter> impl; 
+#pragma warning( pop )
 	};
 }

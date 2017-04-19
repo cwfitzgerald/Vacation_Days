@@ -1,0 +1,172 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="windowModality">
+   <enum>Qt::NonModal</enum>
+  </property>
+  <property name="enabled">
+   <bool>true</bool>
+  </property>
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>632</width>
+    <height>451</height>
+   </rect>
+  </property>
+  <property name="sizePolicy">
+   <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+    <horstretch>0</horstretch>
+    <verstretch>0</verstretch>
+   </sizepolicy>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <layout class="QVBoxLayout" name="verticalLayout">
+    <item>
+     <layout class="QGridLayout" name="gridLayout">
+      <item row="1" column="0">
+       <widget class="QFrame" name="frame_2">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QLabel" name="label_2">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>281</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 10pt &quot;Verdana&quot;;</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="text">
+          <string>Employee Count: &lt;null&gt; employees</string>
+         </property>
+        </widget>
+       </widget>
+      </item>
+      <item row="0" column="0">
+       <widget class="QFrame" name="frame">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <widget class="QLabel" name="label">
+         <property name="geometry">
+          <rect>
+           <x>10</x>
+           <y>10</y>
+           <width>281</width>
+           <height>21</height>
+          </rect>
+         </property>
+         <property name="styleSheet">
+          <string notr="true">font: 10pt &quot;Verdana&quot;;</string>
+         </property>
+         <property name="frameShape">
+          <enum>QFrame::NoFrame</enum>
+         </property>
+         <property name="text">
+          <string>Database: &lt;null&gt;</string>
+         </property>
+        </widget>
+        <zorder>label</zorder>
+        <zorder>frame_2</zorder>
+       </widget>
+      </item>
+     </layout>
+    </item>
+   </layout>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>632</width>
+     <height>21</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFile">
+    <property name="title">
+     <string>File</string>
+    </property>
+    <addaction name="separator"/>
+    <addaction name="actionNew_Database"/>
+    <addaction name="actionOpen_Database"/>
+    <addaction name="actionSave_Database"/>
+    <addaction name="actionSave_As_Database"/>
+    <addaction name="separator"/>
+    <addaction name="actionClose"/>
+   </widget>
+   <widget class="QMenu" name="menuDatabase">
+    <property name="title">
+     <string>Database</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menuHelp">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAbout_VacationTime"/>
+   </widget>
+   <addaction name="menuFile"/>
+   <addaction name="menuDatabase"/>
+   <addaction name="menuHelp"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="actionNew_Database">
+   <property name="text">
+    <string>New Database</string>
+   </property>
+  </action>
+  <action name="actionOpen_Database">
+   <property name="text">
+    <string>Open Database</string>
+   </property>
+  </action>
+  <action name="actionSave_Database">
+   <property name="text">
+    <string>Save Database</string>
+   </property>
+  </action>
+  <action name="actionSave_As_Database">
+   <property name="text">
+    <string>Save As Database</string>
+   </property>
+  </action>
+  <action name="actionClose">
+   <property name="text">
+    <string>Close</string>
+   </property>
+  </action>
+  <action name="actionAbout_VacationTime">
+   <property name="text">
+    <string>About VacationTime</string>
+   </property>
+  </action>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

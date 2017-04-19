@@ -1,5 +1,8 @@
 #include "vacationdb.hpp"
+#include "mainwindow.hpp"
 #include <iostream>
+
+#include <QApplication>
 
 int main(int argc, char* argv[]) {
 	(void) argc;
@@ -26,4 +29,9 @@ int main(int argc, char* argv[]) {
 	catch (std::exception& e) {
 		std::cerr << e.what() << '\n';
 	}
+
+	QApplication app(argc, argv);
+	MainWindow window;
+	window.show();
+	return app.exec();
 }

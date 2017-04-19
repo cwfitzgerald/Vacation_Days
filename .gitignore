@@ -1,2 +1,6 @@
 build*/
 perf.data*
+*CMakeLists.txt.user
+*CMakeSettings.json
+
+.vs/

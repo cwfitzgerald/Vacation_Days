@@ -1,0 +1,5 @@
+if(${WIN32})
+	add_compile_options(/DVACATIONDB_EXPORT)
+else()
+	add_compile_options(-DVACATIONDB_EXPORT)
+endif()
