@@ -17,6 +17,10 @@ link_libraries(${Boost_LIBRARIES})
 
 add_compile_options(-DVACATIONDB_EXPORT)
 
+if (NOT WIN32)
+	add_compile_options(-fpermissive)
+endif()
+
 add_library(vacationdb SHARED ${SOURCES_LIBVACATIONDB})
 
 add_compile_options(-UVACATIONDB_EXPORT)
